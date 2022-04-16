@@ -1,70 +1,79 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+// Import firebase components
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getAuth, signInWithPopup, GoogleAuthProvider  } from 'firebase/auth';
+import { getAnalytics } from 'firebase/analytics';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
 
-// Render each post
-function renderPost(post){
-  const { data: { title, url, author, id } } = post
-  const authorUrl = `https://www.reddit.com/u/${author}`
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAR12TN1sRzz9uGzFhgEt7TctNrGMC90Q0",
+  authDomain: "readingrepo-f6ca9.firebaseapp.com",
+  projectId: "readingrepo-f6ca9",
+  storageBucket: "readingrepo-f6ca9.appspot.com",
+  messagingSenderId: "159221877726",
+  appId: "1:159221877726:web:f257cfbc6a826ad9f96b4f",
+  measurementId: "G-MM4JPG7SQP"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+
+
+//main app function
+function App() {
+
+  // null if not logged in, data otherwise
+  const [user] = useAuthState(auth);
 
   return (
-    <div className="reddit_widget__post" key={id}>
-      <div className="reddit_widget__posted_by">
-        posted by <a href={authorUrl} className="reddit_widget__posted_by" target="_blank" rel="noopener noreferrer">u/{author}</a>
-      </div>
-      <a href={url} className="reddit_widget__title" target="_blank" rel="noopener noreferrer">{title}</a>
+    <div className="readingrepo-widget">
+      <header>
+        <h1>⚛️🔥💬</h1>
+        <SignOut />
+      </header>
+      <section>
+        {user ? <ChatRoom /> : <SignIn />}
+      </section>
+
     </div>
+  );
+}
+function SignIn() {
+
+  const signInWithGoogle = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider);
+  }
+
+  return (
+    <>
+      <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
+      <p>Yo yo you should log in bro</p>
+    </>
+  )
+
+}
+
+function SignOut() {
+  return auth.currentUser && (
+    <button className="sign-out" onClick={() => auth.signOut()}>Sign Out</button>
   )
 }
 
-// Filter, since reddit always returns stickied posts up top
-function nonStickiedOnly(post){
-  return !post.data.stickied
-}
 
-function App({ domElement }) {
-  const subreddit = domElement.getAttribute("data-subreddit")
-  const [loading, setLoading] = useState();
-  const [error, setError] = useState('');
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    // Fetch data from reddit
-    setLoading(true)
-    fetch(`https://www.reddit.com/r/${subreddit}.json`)
-      .then((response) => response.json())
-      .then((data) => {
-        setLoading(false);
-        setData(data.data.children.slice(0, 10));
-      })
-      .catch((e) => {
-        console.log(e)
-        setLoading(false);
-        setError('error fetching from reddit');
-      });
-  }, [ subreddit ])
-
+function ChatRoom() {
   return (
-    <div className="reddit_widget__app">
-      <h1 className="reddit_widget__header">
-        Latest posts in <a href={`https://reddit.com/r/${subreddit}`} rel="noopener noreferrer">/r/{subreddit}</a>
-      </h1>
-      <div className="reddit_widget__inner">
-        {loading && "Loading..."}
-        {error && error}
-        {!!data.length && data.filter(nonStickiedOnly).map(renderPost)}
-      </div>
-      <p className="reddit_widget__powered_by">
-        This widget is powered by{" "}
-        <a
-          href="https://javascriptpros.com"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          JavaScriptPros.com
-        </a>
-      </p>
-    </div>
-  );
+    <>
+      <p>Logged in! I think 🙏</p>
+    </>
+  )
 }
 
 export default App;
