@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 // Import firebase components
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { getAuth, signInWithPopup, GoogleAuthProvider  } from 'firebase/auth';
+import { getFirestore, collection, query, orderBy, limit} from 'firebase/firestore';
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
@@ -31,7 +31,7 @@ function App() {
 
   // null if not logged in, data otherwise
   const [user] = useAuthState(auth);
-
+  console.log(user);
   return (
     <div className="readingrepo-widget">
       <header>
@@ -39,7 +39,7 @@ function App() {
         <SignOut />
       </header>
       <section>
-        {user ? <ChatRoom /> : <SignIn />}
+        {user ? <LandingPage /> : <SignIn />}
       </section>
 
     </div>
@@ -68,11 +68,35 @@ function SignOut() {
 }
 
 
-function ChatRoom() {
+function LandingPage() {
+
+  return (
+    <section>
+        {<BookList />}
+    </section>
+  )
+}
+
+function BookList() {
+  const booksRef = collection(firestore, 'books');
+  const q = query(booksRef, orderBy('createdAt'), limit(5));
+  const [books] = useCollectionData(q, {idField: 'id'});
+
+  return (<>
+    <main>
+      {books && books.map(book => <Book key={book.id} message={book} />)}
+    </main>
+  </>)
+}
+
+function Book(props) {
+  const { text, id } = props.message;
+
   return (
     <>
-      <p>Logged in! I think 🙏</p>
+      <p>{text}</p>
     </>
+    
   )
 }
 
