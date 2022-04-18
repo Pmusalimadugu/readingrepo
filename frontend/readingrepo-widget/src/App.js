@@ -122,7 +122,7 @@ function Book1(props) {
 function ChatRoom() {
   const dummy = useRef();
   const messagesRef = collection(firestore, 'messages');
-  const q = query(messagesRef, orderBy('createdAt'), limit(5));
+  const q = query(messagesRef, orderBy('createdAt'), limit(10));
 
   const [messages] = useCollectionData(q, {idField: 'id'});
 
@@ -182,18 +182,18 @@ function ChatMessage(props) {
 function Search() {
   const [formValue, setFormValue] = useState('');
   const [books, setBooks] = useState([]);
-
+  const maxResults = 10
 
   const searchBooks = async (e) => {
     e.preventDefault();
-    axios.get('https://www.googleapis.com/books/v1/volumes?q=' + formValue + '&maxResults=10')
+    axios.get('https://www.googleapis.com/books/v1/volumes?q=' + formValue + '&maxResults=' + maxResults)
       .then(function (response) {
         console.log(response.data.items);
         setBooks(response.data.items);
         
       });
     setFormValue('');
-
+    
   }
 
   return (<>
