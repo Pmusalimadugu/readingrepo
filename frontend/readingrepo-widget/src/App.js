@@ -7,6 +7,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+import axios from 'axios';
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -78,6 +79,9 @@ function LandingPage() {
     <section>
         {<ChatRoom />}
     </section>
+    <section>
+        {<Search />}
+    </section>
     </>)
 }
 
@@ -99,6 +103,17 @@ function Book(props) {
   return (
     <>
       <p>{text}</p>
+    </>
+    
+  )
+}
+
+function Book1(props) {
+  const book = props.message;
+
+  return (
+    <>
+      <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.title}/>
     </>
     
   )
@@ -161,6 +176,38 @@ function ChatMessage(props) {
       <img src={photoURL || 'https://api.adorable.io/avatars/23/abott@adorable.png'} alt="user profile" />
       <p>{text}</p>
     </div>
+  </>)
+}
+
+function Search() {
+  const [formValue, setFormValue] = useState('');
+  const [books, setBooks] = useState([]);
+
+
+  const searchBooks = async (e) => {
+    e.preventDefault();
+    axios.get('https://www.googleapis.com/books/v1/volumes?q=' + formValue + '&maxResults=10')
+      .then(function (response) {
+        console.log(response.data.items);
+        setBooks(response.data.items);
+        
+      });
+    setFormValue('');
+
+  }
+
+  return (<>
+    <form onSubmit={searchBooks}>
+
+      <input value={formValue} onChange={(e) => setFormValue(e.target.value)} placeholder="search for a book" />
+
+      <button type="submit" disabled={!formValue}>🕊️</button>
+
+    </form>
+
+    <main>
+      {books && books.map(book => <Book1 key={book.id} message={book} />)}
+    </main>
   </>)
 }
 
